@@ -33,7 +33,7 @@ Open `http://localhost:3000`.
 - Spread comes directly from the `l2Book` payload (undocumented but present in the ws data).
 - Mid is derived from the bucketed top of book and **only rendered at the finest tick**. At coarser aggregations the bucketed midpoint isn't accurate, so the value is hidden — spread and spread % still render.
 - Stores split by lifecycle: `market-store` (persisted prefs), `book-store` (server data), `trades-store` (rolling 50-buffer). WS bridges race-protect on coin to drop late frames after symbol switches.
-- Row flashes fire on `|Δsz × px| ≥ $250k` at a stable price (slot reshuffles don't flash). Notional-based rather than % — % is unstable across levels and absolute-size doesn't normalize across coins. 
+- Row flashes fire on `|Δsz × px| ≥ $750k` at a stable price (slot reshuffles don't flash). Notional-based rather than % — % is unstable across levels and absolute-size doesn't normalize across coins. 
 
 ## Trade-offs
 
