@@ -1,0 +1,180 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #F54900;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: #F54900;
+  --radius: 0.625rem;
+
+  --bid: oklch(0.58 0.16 150);
+  --bid-fill: oklch(0.58 0.16 150 / 0.18);
+  --ask: oklch(0.58 0.20 25);
+  --ask-fill: oklch(0.58 0.20 25 / 0.18);
+  --mid-up: var(--bid);
+  --mid-down: var(--ask);
+  --status-open: var(--bid);
+  --status-connecting: oklch(0.78 0.14 75);
+  --status-error: var(--ask);
+  --status-idle: var(--muted-foreground);
+  --sweep-glass: oklch(0 0 0 / 0.06);
+  --sweep-border: oklch(0 0 0 / 0.08);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: #F54900;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: #F54900;
+
+  --bid: oklch(0.72 0.17 150);
+  --bid-fill: oklch(0.72 0.17 150 / 0.20);
+  --ask: oklch(0.70 0.21 25);
+  --ask-fill: oklch(0.70 0.21 25 / 0.20);
+  --sweep-glass: oklch(1 0 0 / 0.07);
+  --sweep-border: oklch(1 0 0 / 0.10);
+  --mid-up: var(--bid);
+  --mid-down: var(--ask);
+  --status-open: var(--bid);
+  --status-connecting: oklch(0.82 0.14 75);
+  --status-error: var(--ask);
+  --status-idle: var(--muted-foreground);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.book-row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: transparent;
+  opacity: 0;
+  transition: opacity 120ms ease-out, background-color 120ms ease-out;
+  z-index: 5;
+}
+
+.book-side-ask .book-row:hover::after,
+.book-side-ask .book-row:hover ~ .book-row::after,
+.book-side-bid .book-row:hover::after,
+.book-side-bid .book-row:has(~ .book-row:hover)::after {
+  opacity: 1;
+  background-color: var(--sweep-glass);
+}
+
+.book-side-ask .book-row:hover::after {
+  box-shadow: inset 0 1px 0 0 var(--sweep-border);
+}
+.book-side-bid .book-row:hover::after {
+  box-shadow: inset 0 -1px 0 0 var(--sweep-border);
+}
+
+@keyframes trade-row-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+    background-color: var(--trade-flash);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: transparent;
+  }
+}
+
+.trade-row {
+  animation: trade-row-enter 350ms ease-out;
+}
+
+@keyframes orderbook-row-flash {
+  0%   { background-color: var(--orderbook-flash); }
+  100% { background-color: transparent; }
+}
+.orderbook-row-flash {
+  animation: orderbook-row-flash 280ms ease-out forwards;
+}
+
