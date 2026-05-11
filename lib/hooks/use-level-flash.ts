@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-const NOTIONAL_THRESHOLD_USD = 250_000
+const NOTIONAL_THRESHOLD_USD = 750_000
 
 export function useLevelFlash(px: number, sz: number) {
   const prevRef = useRef<{ px: number; sz: number } | null>(null)
