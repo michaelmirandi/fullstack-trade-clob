@@ -50,9 +50,9 @@ export function OrderBookView() {
               ? Array.from({ length: maxLevels }).map((_, i) => (
                   <HorizontalSkeleton key={`bs-${i}`} />
                 ))
-              : visibleBids.map((lvl) => (
+              : visibleBids.map((lvl, i) => (
                   <OrderBookRowHorizontal
-                    key={lvl.px}
+                    key={`b-${i}`}
                     level={lvl}
                     side="bid"
                     maxCumulative={maxCumulative}
@@ -66,9 +66,9 @@ export function OrderBookView() {
               ? Array.from({ length: maxLevels }).map((_, i) => (
                   <HorizontalSkeleton key={`as-${i}`} />
                 ))
-              : visibleAsks.map((lvl) => (
+              : visibleAsks.map((lvl, i) => (
                   <OrderBookRowHorizontal
-                    key={lvl.px}
+                    key={`a-${i}`}
                     level={lvl}
                     side="ask"
                     maxCumulative={maxCumulative}

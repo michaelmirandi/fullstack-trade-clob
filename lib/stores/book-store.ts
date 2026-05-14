@@ -87,6 +87,41 @@ export const useBookStore = create<BookState>()((set, get) => ({
 
     const prevMid = get().midPrice
     const prevDirection = get().midDirection
+
+    const orderedPrevAsks = get().asks.map(a => a.px).sort((a, b) => a - b)
+    const orderedPrevBids = get().bids.map(b => b.px).sort((a, b) => b - a)
+
+    const orderedAsks = asks.map(a => a.px).sort((a, b) => a - b)
+    const orderedBids = bids.map(b => b.px).sort((a, b) => b - a)
+
+    const prevAskLevelPxs = new Set(orderedPrevAsks)
+    const prevBidLevelPxs = new Set(orderedPrevBids)
+
+    const askLevelPxs = new Set(orderedAsks)
+    const bidLevelPxs = new Set(orderedBids)
+
+    const removedAskIndicies = new Set(orderedPrevAsks.map((a, i) => askLevelPxs.has(a) ? -1 : i).filter(a => a !== -1))
+    const removedBidIndicies = new Set(orderedPrevBids.map((b, i) => bidLevelPxs.has(b) ? -1 : i).filter(b => b !== -1))
+
+
+
+    const newAsks = asks.sort((a, b) => a.px - b.px).map((a, i) => {
+      return {
+        ...a,
+        isNewLevel: !prevAskLevelPxs.has(a.px),
+        isPopLevel: removedAskIndicies.has(i)
+      }
+    })
+
+    const newBids = bids.sort((a, b) => b.px - a.px).map((b, i) => {
+      return {
+        ...b,
+        isNewLevel: !prevBidLevelPxs.has(b.px),
+        isPopLevel: removedBidIndicies.has(i)
+      }
+    })
+
+
     let midDirection: MidDirection
     if (midPrice == null || prevMid == null) midDirection = "flat"
     else if (midPrice > prevMid) midDirection = "up"
@@ -94,8 +129,8 @@ export const useBookStore = create<BookState>()((set, get) => ({
     else midDirection = prevDirection
 
     set({
-      bids,
-      asks,
+      bids: newBids,
+      asks: newAsks,
       maxCumulative,
       lastUpdate: book.time,
       spread,

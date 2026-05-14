@@ -37,7 +37,7 @@ export function OrderBookRow({
   const avgFill = level.cumulative > 0
     ? level.cumulativeNotional / level.cumulative
     : 0
-  const flashId = useLevelFlash(level.px, level.sz)
+  // const flashId = useLevelFlash(level.px, level.sz)
 
   return (
     <Tooltip>
@@ -54,9 +54,9 @@ export function OrderBookRow({
               transition: "transform 180ms ease-out",
             }}
           />
-          {flashId !== null && (
+          {(level.isNewLevel || level.isPopLevel) && (
             <span
-              key={flashId}
+              key={`${level.px}-new-level-flash`}
               aria-hidden
               className="orderbook-row-flash absolute inset-0 pointer-events-none z-[7]"
               style={{

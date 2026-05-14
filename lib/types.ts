@@ -33,6 +33,8 @@ export interface Level {
   n: number
   cumulative: number
   cumulativeNotional: number
+  isNewLevel?: boolean
+  isPopLevel?: boolean
 }
 
 export interface Trade {
