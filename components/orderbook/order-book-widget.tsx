@@ -1,7 +1,12 @@
 "use client"
 
+import { useState } from "react"
+import { ColorizeToggle } from "@/components/orderbook/colorize-toggle"
 import { LeverageBadge } from "@/components/orderbook/leverage-badge"
-import { OrderBookTabs } from "@/components/orderbook/order-book-tabs"
+import {
+  OrderBookTabs,
+  type OrderBookTab,
+} from "@/components/orderbook/order-book-tabs"
 import { SigFigsSelect } from "@/components/orderbook/sig-figs-select"
 import { StatusPill } from "@/components/orderbook/status-pill"
 import { SymbolSelect } from "@/components/orderbook/symbol-select"
@@ -12,6 +17,7 @@ import { useOrderbookSocket } from "@/lib/hooks/use-orderbook-socket"
 
 export function OrderBookWidget() {
   useOrderbookSocket()
+  const [tab, setTab] = useState<OrderBookTab>("orders")
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -27,10 +33,10 @@ export function OrderBookWidget() {
           </div>
         </header>
 
-        <OrderBookTabs />
+        <OrderBookTabs value={tab} onValueChange={setTab} />
 
         <footer className="flex items-center justify-between gap-2 px-3 py-2 border-t border-border">
-          <SigFigsSelect />
+          {tab === "trades" ? <ColorizeToggle /> : <SigFigsSelect />}
           <UnitToggle />
         </footer>
       </div>

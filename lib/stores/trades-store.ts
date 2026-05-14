@@ -7,13 +7,15 @@ const MAX_TRADES = 50
 
 interface TradesState {
   trades: Trade[]
+  colorize: boolean
   applyTrades: (incoming: WsTrade[]) => void
+  setColorize: (v: boolean) => void
   reset: () => void
 }
 
 export const useTradesStore = create<TradesState>()((set) => ({
   trades: [],
-
+  colorize: false,
   applyTrades: (incoming) => {
     if (!incoming.length) return
     const converted: Trade[] = incoming.map((t) => ({
@@ -28,7 +30,7 @@ export const useTradesStore = create<TradesState>()((set) => ({
       return { trades: merged.slice(0, MAX_TRADES) }
     })
   },
-
+  setColorize: (v) => set({ colorize: v }),
   reset: () => set({ trades: [] }),
 }))
 

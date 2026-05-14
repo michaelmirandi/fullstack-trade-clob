@@ -4,9 +4,20 @@ import { OrderBookView } from "@/components/orderbook/order-book-view"
 import { TradesView } from "@/components/orderbook/trades-view"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-export function OrderBookTabs() {
+export type OrderBookTab = "orders" | "trades"
+
+interface Props {
+  value: OrderBookTab
+  onValueChange: (v: OrderBookTab) => void
+}
+
+export function OrderBookTabs({ value, onValueChange }: Props) {
   return (
-    <Tabs defaultValue="orders" className="gap-0 px-0">
+    <Tabs
+      value={value}
+      onValueChange={(v) => onValueChange(v as OrderBookTab)}
+      className="gap-0 px-0"
+    >
       <TabsList variant="line">
         <TabsTrigger value="orders">Order Book</TabsTrigger>
         <TabsTrigger value="trades">Trades</TabsTrigger>
