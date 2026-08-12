@@ -59,6 +59,53 @@ const EMPTY_LEVELS: Pick<
   deepBook: null,
 }
 
+// When price moves within the deep feed's ~5s push interval, every deep
+// level on the side price moved toward becomes stale and gets filtered out,
+// collapsing that side to the 5 fast levels. When that happens we re-seed
+// the tail from a fresh REST snapshot instead of waiting for the next push.
+const RESEED_MIN_LEVELS = 14 // most rows the UI renders per side
+const RESEED_THROTTLE_MS = 1_500
+
+let reseedInFlight = false
+let lastReseedAt = 0
+
+function maybeReseedDeep(bidCount: number, askCount: number) {
+  if (bidCount >= RESEED_MIN_LEVELS && askCount >= RESEED_MIN_LEVELS) return
+  const now = Date.now()
+  if (reseedInFlight || now - lastReseedAt < RESEED_THROTTLE_MS) return
+  reseedInFlight = true
+  lastReseedAt = now
+
+  const { symbol, nSigFigs, mantissa } = useMarketStore.getState()
+  const body: Record<string, unknown> = { type: "l2Book", coin: symbol }
+  if (nSigFigs !== null) body.nSigFigs = nSigFigs
+  if (nSigFigs === 5 && mantissa !== null) body.mantissa = mantissa
+
+  fetch("https://api.hyperliquid.xyz/info", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  })
+    .then((res) => res.json())
+    .then((book: WsBook) => {
+      const market = useMarketStore.getState()
+      // Drop the response if the market or aggregation changed in flight.
+      if (
+        book.coin !== market.symbol ||
+        nSigFigs !== market.nSigFigs ||
+        mantissa !== market.mantissa
+      )
+        return
+      useBookStore.getState().applySnapshot(book)
+    })
+    .catch(() => {
+      // Transient fetch failure; the next deep ws push recovers the tail.
+    })
+    .finally(() => {
+      reseedInFlight = false
+    })
+}
+
 /**
  * Merge the fast feed (authoritative top of book) with the deep feed's tail.
  * Deep levels inside or crossing the fast range are dropped: they are up to
@@ -135,6 +182,12 @@ export const useBookStore = create<BookState>()((set, get) => ({
 
     const bids = deriveLevels(rawBids ?? [], "bid")
     const asks = deriveLevels(rawAsks ?? [], "ask")
+
+    // A thin side means the merge filtered out a stale deep tail; fetch a
+    // fresh snapshot rather than waiting up to ~5s for the next deep push.
+    if (fastIsFresh && deepBook !== null) {
+      maybeReseedDeep(bids.length, asks.length)
+    }
 
     const maxCumulative = Math.max(
       bids.at(-1)?.cumulative ?? 0,
