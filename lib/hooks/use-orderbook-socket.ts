@@ -17,7 +17,26 @@ export function useOrderbookSocket() {
 
   useEffect(() => {
     useBookStore.getState().resetLevels()
-    return hl.subscribe({ type: "l2Book", coin: symbol, nSigFigs, mantissa })
+    // Dual feed: fast gives 5 levels every 0.5s, deep gives 20 levels
+    // every 2-5s. The book store merges them (fast owns the top of book).
+    const unsubFast = hl.subscribe({
+      type: "l2Book",
+      coin: symbol,
+      nSigFigs,
+      mantissa,
+      fast: true,
+    })
+    const unsubDeep = hl.subscribe({
+      type: "l2Book",
+      coin: symbol,
+      nSigFigs,
+      mantissa,
+      fast: false,
+    })
+    return () => {
+      unsubFast()
+      unsubDeep()
+    }
   }, [symbol, nSigFigs, mantissa])
 
   useEffect(() => {

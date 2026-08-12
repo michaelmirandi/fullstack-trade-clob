@@ -8,6 +8,7 @@ export type Subscription =
       coin: string
       nSigFigs: number | null
       mantissa: number | null
+      fast: boolean
     }
   | { type: "trades"; coin: string }
 
@@ -28,10 +29,17 @@ interface HlClient {
 function keyOf(sub: Subscription): string {
   switch (sub.type) {
     case "l2Book":
-      return `l2Book:${sub.coin}:${sub.nSigFigs}:${sub.mantissa}`
+      return `l2Book:${sub.coin}:${sub.nSigFigs}:${sub.mantissa}:${sub.fast}`
     case "trades":
       return `trades:${sub.coin}`
   }
+}
+
+// The fast and deep l2Book feeds share one channel; the only way to tell
+// snapshots apart is by shape (fast carries at most 5 levels per side).
+export function isFastBook(book: WsBook): boolean {
+  const [bids, asks] = book.levels
+  return (bids?.length ?? 0) <= 5 && (asks?.length ?? 0) <= 5
 }
 
 function buildSubMessage(sub: Subscription) {
@@ -42,10 +50,12 @@ function buildSubMessage(sub: Subscription) {
         coin: string
         nSigFigs?: number
         mantissa?: number
+        fast?: boolean
       } = { type: "l2Book", coin: sub.coin }
       if (sub.nSigFigs !== null) m.nSigFigs = sub.nSigFigs
       // mantissa is only valid alongside nSigFigs=5 per HL docs
       if (sub.nSigFigs === 5 && sub.mantissa !== null) m.mantissa = sub.mantissa
+      if (sub.fast) m.fast = true
       return m
     }
     case "trades":
@@ -126,7 +136,9 @@ function createHlClient(): HlClient {
         case "l2Book": {
           const book = msg.data as WsBook
           if (pending.l2Book === null) pending.l2Book = new Map()
-          pending.l2Book.set(book.coin, book)
+          // Key by coin + shape so a fast snapshot doesn't clobber a deep
+          // one (or vice versa) arriving within the same frame.
+          pending.l2Book.set(`${book.coin}:${isFastBook(book)}`, book)
           break
         }
         case "trades": {
